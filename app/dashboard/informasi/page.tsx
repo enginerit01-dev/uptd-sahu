@@ -3,19 +3,18 @@ import { Building2, MapPinned } from "lucide-react";
 import { requireAuth } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { informationConfigs } from "@/lib/information/config";
+import { getPublicInformation } from "@/lib/information/data";
 import { InformationForm } from "@/components/information/information-form";
 
 export default async function InformationPage() {
   const profile = await requireAuth();
   const supabase = await createClient();
   const [officeResult, districtResult] = await Promise.all([
-    supabase.from("office_information").select("*").limit(1).maybeSingle(),
-    supabase.from("district_information").select("*").limit(1).maybeSingle(),
+    getPublicInformation("office_information"),
+    getPublicInformation("district_information"),
   ]);
-  if (officeResult.error) console.error("Load office information error:", officeResult.error);
-  if (districtResult.error) console.error("Load district information error:", districtResult.error);
-  const office = officeResult.data ?? {};
-  const district = districtResult.data ?? {};
+  const office = officeResult ?? {};
+  const district = districtResult ?? {};
   const photoPath = String(district.photo_path ?? "");
   const { data: photo } = photoPath ? await supabase.storage.from("informasi").createSignedUrl(photoPath, 600) : { data: null };
   const officePhotoPath = String(office.photo_path ?? "");

@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { requireRole } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { informationConfigs } from "@/lib/information/config";
@@ -48,6 +48,7 @@ export async function saveInformation(formData: FormData) {
     return { error: "Gagal menyimpan informasi. Pastikan kolom tabel sesuai konfigurasi." };
   }
   if (current && current.photo_path && photoPath && current.photo_path !== photoPath) await supabase.storage.from("informasi").remove([current.photo_path]);
+  revalidateTag("public-information", { expire: 0 });
   revalidatePath("/dashboard/informasi");
   return { success: true };
 }
